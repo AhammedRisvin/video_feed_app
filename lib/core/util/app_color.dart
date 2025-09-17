@@ -12,4 +12,7 @@ class AppColor {
   static Color blueColor = const Color(0xFF092e5a);
   static Color redColor = const Color(0xFFd63031);
   static Color greenColor = const Color(0xFF389A48);
+  static Color scaffoldColor = const Color(0xFF171717);
+
+  //#171717
 }

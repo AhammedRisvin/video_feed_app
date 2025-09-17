@@ -30,8 +30,11 @@ class MyApp extends StatelessWidget {
                 title: 'Video Feed App',
                 theme: ThemeData(
                   fontFamily: GoogleFonts.montserrat().fontFamily,
-                  scaffoldBackgroundColor: AppColor.black,
-                  appBarTheme: const AppBarTheme(surfaceTintColor: AppColor.white, backgroundColor: AppColor.white),
+                  scaffoldBackgroundColor: AppColor.scaffoldColor,
+                  appBarTheme: AppBarTheme(
+                    surfaceTintColor: AppColor.scaffoldColor,
+                    backgroundColor: AppColor.scaffoldColor,
+                  ),
                   colorScheme: ColorScheme.fromSeed(seedColor: AppColor.appPrimary),
                 ),
                 debugShowCheckedModeBanner: false,

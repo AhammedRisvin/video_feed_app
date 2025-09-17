@@ -36,7 +36,7 @@ class FeedWidget extends StatelessWidget {
                       maxLines: 2,
                       overFlow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 7),
                     text(
                       text: '5 days ago',
                       size: 10,
