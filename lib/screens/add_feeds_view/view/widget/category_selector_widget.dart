@@ -22,7 +22,7 @@ class CategorySelector extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xffC70000).withOpacity(0.4) : Colors.black,
+                  color: isSelected ? const Color(0xffC70000).withOpacity(0.4) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xffC70000).withOpacity(isSelected ? 1.0 : 0.4), width: 0.62),
                 ),

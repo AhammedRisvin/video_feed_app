@@ -13,63 +13,75 @@ class AddFeedsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizeBoxH(Responsive.height * 6),
-            _buildHeader(context),
-            SizeBoxH(40),
-            _buildVideoPicker(),
-            SizeBoxH(40),
-            _buildThumbnailPicker(),
-            SizeBoxH(32),
-            text(text: 'Add Description', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
-            SizeBoxH(12),
-            _buildDescriptionField(),
-            Divider(color: const Color(0xff515151), thickness: 0.21),
-            SizeBoxH(12),
-            _buildCategoryHeader(),
-            SizeBoxH(20),
-            const CategorySelector(),
-          ],
-        ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizeBoxH(Responsive.height * 6),
+          _buildHeader(context),
+          SizeBoxH(10),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizeBoxH(30),
+                  _buildVideoPicker(),
+                  SizeBoxH(40),
+                  _buildThumbnailPicker(),
+                  SizeBoxH(32),
+                  text(text: 'Add Description', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
+                  SizeBoxH(12),
+                  _buildDescriptionField(),
+                  Divider(color: const Color(0xff515151), thickness: 0.21),
+                  SizeBoxH(12),
+                  _buildCategoryHeader(),
+                  SizeBoxH(20),
+                  const CategorySelector(),
+                  SizeBoxH(100),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            height: 20,
-            width: 20,
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColor.white),
-              borderRadius: BorderRadius.circular(100),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              height: 20,
+              width: 20,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColor.white),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              margin: const EdgeInsets.only(right: 20),
+              child: Icon(Icons.arrow_back_ios_new_outlined, color: AppColor.white, size: 12),
             ),
-            margin: const EdgeInsets.only(right: 20),
-            child: Icon(Icons.arrow_back_ios_new_outlined, color: AppColor.white, size: 12),
           ),
-        ),
-        text(text: 'Add Feeds', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
-        const Spacer(),
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: const Color(0xffC70000).withOpacity(0.2)),
-              color: const Color(0xffC70000).withOpacity(0.4),
+          text(text: 'Add Feeds', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
+          const Spacer(),
+          GestureDetector(
+            onTap: () {},
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: const Color(0xffC70000).withOpacity(0.2)),
+                color: const Color(0xffC70000).withOpacity(0.4),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+              child: text(text: 'Share Post', size: 13, fontWeight: FontWeight.w400, color: AppColor.white),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-            child: text(text: 'Share Post', size: 13, fontWeight: FontWeight.w400, color: AppColor.white),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
