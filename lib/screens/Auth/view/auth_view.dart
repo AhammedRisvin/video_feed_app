@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_feed_app/core/routes/routes.dart';
 import 'package:video_feed_app/core/util/common_widgets.dart';
 import 'package:video_feed_app/core/util/sized_box.dart';
 
@@ -77,7 +78,9 @@ class _AuthViewState extends State<AuthView> {
             Align(
               alignment: Alignment.center,
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.home);
+                },
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
