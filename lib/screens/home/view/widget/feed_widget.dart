@@ -18,7 +18,6 @@ class FeedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Default values for skeleton loading
     final String userName = feed?.user?.name ?? 'Loading User';
     final String userImage = feed?.user?.image?.toString() ?? 'https://picsum.photos/300/200';
     final String description = feed?.description ?? 'Loading description...';
@@ -33,7 +32,6 @@ class FeedWidget extends StatelessWidget {
         return Column(
           children: [
             SizeBoxH(20),
-            // User info section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Row(
@@ -63,7 +61,6 @@ class FeedWidget extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Close video button (only show if this video is playing)
                   if (isCurrentlyPlaying)
                     IconButton(
                       onPressed: () => provider.stopCurrentVideo(),
@@ -74,7 +71,6 @@ class FeedWidget extends StatelessWidget {
             ),
             SizeBoxH(15),
 
-            // Video/Image section
             if (hasVideo)
               EnhancedVideoPlayer(
                 feedIndex: feedIndex,
@@ -82,11 +78,9 @@ class FeedWidget extends StatelessWidget {
                 isCurrentlyPlaying: isCurrentlyPlaying,
               )
             else
-              // Static image for feeds without video
               _buildStaticImage(thumbnailUrl),
 
             SizeBoxH(11),
-            // Description section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Align(
@@ -152,7 +146,6 @@ class FeedWidget extends StatelessWidget {
   }
 
   String _getThumbnailUrl() {
-    // Prefer image field for thumbnail, fallback to placeholder
     if (feed?.image != null && feed!.image!.isNotEmpty) {
       return feed!.image!;
     }

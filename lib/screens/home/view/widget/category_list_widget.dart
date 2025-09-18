@@ -12,7 +12,6 @@ class CategoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HomeProvider>(
       builder: (context, provider, child) {
-        // Default categories as fallback
         final List<Map<String, dynamic>> defaultCategories = [
           {'name': 'Explore', 'icon': 'assets/image/ExplorePng.png'},
           {'name': 'Sports'},
@@ -21,22 +20,17 @@ class CategoryList extends StatelessWidget {
           {'name': 'Movies'},
         ];
 
-        // Use API categories if available, otherwise use default
         final List<Map<String, dynamic>> displayCategories = [];
 
         if (provider.categories.isNotEmpty) {
-          // Add Explore as first item
           displayCategories.add({'name': 'Explore', 'icon': 'assets/image/ExplorePng.png'});
 
-          // Add API categories
           for (var category in provider.categories) {
             displayCategories.add({'name': category.title ?? 'Unknown', 'image': category.image, 'id': category.id});
           }
         } else if (!provider.isCategoryLoading) {
-          // Use default categories if not loading and no API data
           displayCategories.addAll(defaultCategories);
         } else {
-          // Show skeleton categories while loading
           displayCategories.addAll(defaultCategories);
         }
 
@@ -72,7 +66,6 @@ class CategoryList extends StatelessWidget {
                     return GestureDetector(
                       onTap: () {
                         context.read<HomeProvider>().selectCategory(index);
-                        // Log category selection for debugging
                         print('Selected category: ${category['name']} at index: $index');
                       },
                       child: Container(
@@ -90,7 +83,6 @@ class CategoryList extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isSelected) ...[
-                              // Show icon for first item (Explore) or if category has image
                               if (index == 0) ...[
                                 Image.asset(
                                   category['icon'] ?? 'assets/image/ExplorePng.png',

@@ -74,7 +74,6 @@ class AddFeedsView extends StatelessWidget {
           const Spacer(),
           GestureDetector(
             onTap: () async {
-              // Show validation error if form is invalid
               if (!provider.validateForm()) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please fill all required fields'), backgroundColor: Colors.red),
@@ -82,7 +81,6 @@ class AddFeedsView extends StatelessWidget {
                 return;
               }
 
-              // Call the API
               try {
                 final success = await provider.addFeedFn();
 
@@ -103,7 +101,6 @@ class AddFeedsView extends StatelessWidget {
                     }
                   }
                 } else {
-                  // Show error message
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -114,7 +111,6 @@ class AddFeedsView extends StatelessWidget {
                   }
                 }
               } catch (e) {
-                // Handle any unexpected errors
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('An error occurred: ${e.toString()}'), backgroundColor: Colors.red),

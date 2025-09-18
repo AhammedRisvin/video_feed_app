@@ -37,21 +37,17 @@ class EnhancedVideoPlayer extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Video player or thumbnail
                 if (isThisVideoPlaying && provider.isVideoInitialized)
                   _buildVideoPlayer(provider)
                 else
                   _buildThumbnail(),
 
-                // Loading indicator
                 if (isThisVideoPlaying && provider.isVideoLoading)
                   const CircularProgressIndicator(color: Color(0xffC70000)),
 
-                // Play button overlay (only show on thumbnail or paused video)
                 if (!isThisVideoPlaying || (isThisVideoPlaying && !provider.isVideoPlaying && !provider.isVideoLoading))
                   _buildPlayButton(),
 
-                // Video controls overlay (only when video is playing)
                 if (isThisVideoPlaying && provider.isVideoInitialized) _buildVideoControls(context, provider),
               ],
             ),
@@ -134,14 +130,11 @@ class EnhancedVideoPlayer extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // Progress bar
                     _buildProgressBar(provider, context),
                     const SizedBox(height: 12),
-                    // Control buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Play/Pause button
                         GestureDetector(
                           onTap: () => provider.togglePlayPause(),
                           child: Container(
@@ -155,7 +148,6 @@ class EnhancedVideoPlayer extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 20),
-                        // Close button
                         GestureDetector(
                           onTap: () => provider.stopCurrentVideo(),
                           child: Container(
@@ -179,7 +171,6 @@ class EnhancedVideoPlayer extends StatelessWidget {
   Widget _buildProgressBar(HomeProvider provider, BuildContext context) {
     return Column(
       children: [
-        // Time labels
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -188,7 +179,6 @@ class EnhancedVideoPlayer extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        // Progress slider
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: const Color(0xffC70000),

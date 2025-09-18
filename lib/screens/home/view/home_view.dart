@@ -30,7 +30,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // Stop any playing video when disposing
     Provider.of<HomeProvider>(context, listen: false).stopCurrentVideo();
     super.dispose();
   }
@@ -40,7 +39,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     final provider = Provider.of<HomeProvider>(context, listen: false);
 
-    // Pause video when app goes to background
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       provider.pauseVideo();
     }
@@ -58,7 +56,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  /// Builds the custom AppBar with dynamic user data
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       automaticallyImplyLeading: false,
@@ -150,7 +147,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  /// Builds the empty state when no feeds are available
   Widget _buildEmptyState() {
     return Container(
       padding: const EdgeInsets.all(40),
@@ -187,7 +183,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  /// Builds the error state
   Widget _buildErrorState() {
     return Container(
       padding: const EdgeInsets.all(40),
