@@ -23,8 +23,8 @@ class ServerClient {
     return headers;
   }
 
-  static Future<List> get(String url) async {
-    final headers = _buildHeaders();
+  static Future<List> get(String url, {bool includeToken = true}) async {
+    final headers = _buildHeaders(includeToken: includeToken);
     log('GET → $url');
     try {
       final response = await http.get(Uri.parse(url), headers: headers).timeout(Duration(seconds: _timeout));
@@ -37,8 +37,13 @@ class ServerClient {
     }
   }
 
-  static Future<List> post(String url, {Map<String, dynamic>? data, bool useForm = false}) async {
-    final headers = _buildHeaders(useForm: useForm);
+  static Future<List> post(
+    String url, {
+    Map<String, dynamic>? data,
+    bool useForm = false,
+    bool includeToken = true,
+  }) async {
+    final headers = _buildHeaders(includeToken: includeToken, useForm: useForm);
     final body = useForm ? data?.map((key, value) => MapEntry(key, value.toString())) : json.encode(data);
 
     log('POST → $url\nPayload: $data\nForm: $useForm');
@@ -55,8 +60,8 @@ class ServerClient {
     }
   }
 
-  static Future<List> put(String url, {Map<String, dynamic>? data, bool put = false}) async {
-    final headers = _buildHeaders();
+  static Future<List> put(String url, {Map<String, dynamic>? data, bool put = false, bool includeToken = true}) async {
+    final headers = _buildHeaders(includeToken: includeToken);
     final body = put ? json.encode(data) : null;
     log('PUT → $url\nPayload: $data');
     try {
@@ -72,8 +77,13 @@ class ServerClient {
     }
   }
 
-  static Future<List> delete(String url, {bool delete = false, Map<String, dynamic>? data}) async {
-    final headers = _buildHeaders();
+  static Future<List> delete(
+    String url, {
+    bool delete = false,
+    Map<String, dynamic>? data,
+    bool includeToken = true,
+  }) async {
+    final headers = _buildHeaders(includeToken: includeToken);
     final body = delete ? json.encode(data) : null;
     log('DELETE → $url\nPayload: $data');
     try {
@@ -107,6 +117,12 @@ class ServerClient {
     switch (statusCode) {
       case 200:
       case 201:
+        if (body == null || body is! Map<String, dynamic>) {
+          log('Warning: Expected JSON object but got ${body.runtimeType}');
+          return [statusCode, {}]; // safe fallback
+        }
+        return [statusCode, body];
+      case 202:
         if (body == null || body is! Map<String, dynamic>) {
           log('Warning: Expected JSON object but got ${body.runtimeType}');
           return [statusCode, {}]; // safe fallback

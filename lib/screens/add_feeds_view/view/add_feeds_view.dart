@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:video_feed_app/core/util/app_color.dart';
 import 'package:video_feed_app/core/util/common_widgets.dart';
 import 'package:video_feed_app/core/util/responsive.dart';
 import 'package:video_feed_app/core/util/sized_box.dart';
 
+import '../view_model/add_feeds_provider.dart';
 import 'widget/category_selector_widget.dart';
 import 'widget/custom_dotted_container.dart';
 
@@ -12,12 +14,14 @@ class AddFeedsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AddFeedsProvider>();
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizeBoxH(Responsive.height * 6),
-          _buildHeader(context),
+          _buildHeader(context, provider),
           SizeBoxH(10),
           Expanded(
             child: SingleChildScrollView(
@@ -26,13 +30,13 @@ class AddFeedsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizeBoxH(30),
-                  _buildVideoPicker(),
+                  _buildVideoPicker(provider),
                   SizeBoxH(40),
-                  _buildThumbnailPicker(),
+                  _buildThumbnailPicker(provider),
                   SizeBoxH(32),
                   text(text: 'Add Description', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
                   SizeBoxH(12),
-                  _buildDescriptionField(),
+                  _buildDescriptionField(provider),
                   Divider(color: const Color(0xff515151), thickness: 0.21),
                   SizeBoxH(12),
                   _buildCategoryHeader(),
@@ -48,7 +52,7 @@ class AddFeedsView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AddFeedsProvider provider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: Row(
@@ -69,7 +73,15 @@ class AddFeedsView extends StatelessWidget {
           text(text: 'Add Feeds', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
           const Spacer(),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              if (!provider.validateForm()) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
+                return;
+              }
+              // TODO: Upload logic here
+            },
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),
@@ -77,7 +89,13 @@ class AddFeedsView extends StatelessWidget {
                 color: const Color(0xffC70000).withOpacity(0.4),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-              child: text(text: 'Share Post', size: 13, fontWeight: FontWeight.w400, color: AppColor.white),
+              child: provider.isLoading
+                  ? const SizedBox(
+                      height: 14,
+                      width: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : text(text: 'Share Post', size: 13, fontWeight: FontWeight.w400, color: AppColor.white),
             ),
           ),
         ],
@@ -85,44 +103,63 @@ class AddFeedsView extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoPicker() {
-    return CustomDottedContainer(
-      child: SizedBox(
-        width: double.infinity,
-        height: 280,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/image/gallery-add.png', height: 55, width: 55),
-            SizeBoxH(20),
-            text(text: 'Select a video from Gallery', size: 15, fontWeight: FontWeight.w400, color: AppColor.white),
-          ],
+  Widget _buildVideoPicker(AddFeedsProvider provider) {
+    return GestureDetector(
+      onTap: provider.pickVideo,
+      child: CustomDottedContainer(
+        child: SizedBox(
+          width: double.infinity,
+          height: 280,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/image/gallery-add.png', height: 55, width: 55),
+              SizeBoxH(20),
+              text(
+                text: provider.videoFile != null
+                    ? _shortenFileName(provider.videoFile!.path)
+                    : 'Select a video from Gallery',
+                size: 15,
+                fontWeight: FontWeight.w400,
+                color: AppColor.white,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildThumbnailPicker() {
-    return CustomDottedContainer(
-      child: SizedBox(
-        width: double.infinity,
-        height: 128,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/image/thumbnailAdd.png', height: 20, width: 32),
-            SizeBoxV(50),
-            text(text: 'Thumbnail', size: 15, fontWeight: FontWeight.w400, color: AppColor.white),
-          ],
+  Widget _buildThumbnailPicker(AddFeedsProvider provider) {
+    return GestureDetector(
+      onTap: provider.pickThumbnail,
+      child: CustomDottedContainer(
+        child: SizedBox(
+          width: double.infinity,
+          height: 128,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/image/thumbnailAdd.png', height: 20, width: 32),
+              SizeBoxV(50),
+              text(
+                text: provider.thumbnailFile != null ? _shortenFileName(provider.thumbnailFile!.path) : 'Thumbnail',
+                size: 15,
+                fontWeight: FontWeight.w400,
+                color: AppColor.white,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDescriptionField() {
+  Widget _buildDescriptionField(AddFeedsProvider provider) {
     return TextFormField(
       style: const TextStyle(color: Colors.white, fontSize: 14),
       maxLines: null,
+      onChanged: (val) => provider.description = val,
       decoration: const InputDecoration(
         isDense: true,
         border: InputBorder.none,
@@ -150,5 +187,13 @@ class AddFeedsView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _shortenFileName(String path) {
+    final name = path.split('/').last;
+    if (name.length > 20) {
+      return '${name.substring(0, 10)}...${name.substring(name.length - 7)}';
+    }
+    return name;
   }
 }
