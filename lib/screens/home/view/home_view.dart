@@ -16,14 +16,34 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<HomeProvider>(context, listen: false).getHomeData();
       Provider.of<HomeProvider>(context, listen: false).getCategoryData();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Stop any playing video when disposing
+    Provider.of<HomeProvider>(context, listen: false).stopCurrentVideo();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final provider = Provider.of<HomeProvider>(context, listen: false);
+
+    // Pause video when app goes to background
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      provider.pauseVideo();
+    }
   }
 
   @override
@@ -50,7 +70,6 @@ class _HomeViewState extends State<HomeView> {
             children: [
               Skeletonizer(
                 effect: ShimmerEffect(baseColor: const Color(0xff1F1F1F), highlightColor: const Color(0xff2F2F2F)),
-
                 enabled: provider.isLoading,
                 child: text(
                   text: provider.isLoading ? 'Hello User' : provider.getUserGreeting(),
@@ -77,7 +96,6 @@ class _HomeViewState extends State<HomeView> {
             final userImage = provider.user?.image?.toString();
             return Skeletonizer(
               effect: ShimmerEffect(baseColor: const Color(0xff1F1F1F), highlightColor: const Color(0xff2F2F2F)),
-
               enabled: provider.isLoading,
               child: image(
                 url: (userImage != null && userImage.isNotEmpty) ? userImage : 'https://picsum.photos/300/200',
@@ -122,9 +140,9 @@ class _HomeViewState extends State<HomeView> {
             separatorBuilder: (_, __) => Divider(color: AppColor.black, thickness: 3),
             itemBuilder: (context, index) {
               if (provider.isLoading) {
-                return const FeedWidget();
+                return FeedWidget(feedIndex: index);
               }
-              return FeedWidget(feed: provider.feeds[index]);
+              return FeedWidget(feed: provider.feeds[index], feedIndex: index);
             },
           ),
         );

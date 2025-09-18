@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -37,12 +38,7 @@ class ServerClient {
     }
   }
 
-  static Future<List> post(
-    String url, {
-    Map<String, dynamic>? data,
-    bool useForm = false,
-    bool includeToken = true,
-  }) async {
+  static Future<List> post(String url, {dynamic data, bool useForm = false, bool includeToken = true}) async {
     final headers = _buildHeaders(includeToken: includeToken, useForm: useForm);
     final body = useForm ? data?.map((key, value) => MapEntry(key, value.toString())) : json.encode(data);
 
@@ -58,6 +54,29 @@ class ServerClient {
     } catch (e) {
       return [600, e.toString()];
     }
+  }
+
+  static Future<List> dioPost(String url, {dynamic data, bool useForm = false, bool includeToken = true}) async {
+    final token = Store.userToken.trim();
+    final headers = {
+      "Accept": "application/json",
+      "country": "india",
+      if (includeToken && token.isNotEmpty) "authorization": "Bearer $token",
+    };
+
+    final dio = Dio(
+      BaseOptions(
+        headers: headers,
+        connectTimeout: Duration(seconds: _timeout),
+      ),
+    );
+
+    if (useForm && data is Map<String, dynamic>) {
+      data = FormData.fromMap(data);
+    }
+
+    final response = await dio.post(url, data: data);
+    return [response.statusCode, response.data];
   }
 
   static Future<List> put(String url, {Map<String, dynamic>? data, bool put = false, bool includeToken = true}) async {

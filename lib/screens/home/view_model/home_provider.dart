@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
@@ -72,6 +73,23 @@ class HomeProvider extends ChangeNotifier {
   List<dynamic> get banners => _feedModel?.banners ?? [];
   List<CategoryDict> get categoryDict => _feedModel?.categoryDict ?? [];
 
+  // Video management properties
+  VideoPlayerController? _currentVideoController;
+  int? _currentPlayingIndex;
+  bool _isVideoPlaying = false;
+  bool _isVideoLoading = false;
+  Duration _videoDuration = Duration.zero;
+  Duration _videoPosition = Duration.zero;
+
+  // Video getters
+  VideoPlayerController? get currentVideoController => _currentVideoController;
+  int? get currentPlayingIndex => _currentPlayingIndex;
+  bool get isVideoPlaying => _isVideoPlaying;
+  bool get isVideoLoading => _isVideoLoading;
+  Duration get videoDuration => _videoDuration;
+  Duration get videoPosition => _videoPosition;
+  bool get isVideoInitialized => _currentVideoController?.value.isInitialized ?? false;
+
   Future<void> getHomeData() async {
     _hasError = false;
     _isLoading = true;
@@ -115,6 +133,136 @@ class HomeProvider extends ChangeNotifier {
 
   // Method to refresh all data
   Future<void> refreshData() async {
+    // Stop any playing video before refresh
+    await stopCurrentVideo();
     await Future.wait([getHomeData(), getCategoryData()]);
+  }
+
+  // Video management methods
+  Future<void> playVideo(int feedIndex) async {
+    if (feedIndex >= feeds.length) return;
+
+    final feed = feeds[feedIndex];
+    final videoUrl = feed.video;
+
+    if (videoUrl == null || videoUrl.isEmpty) {
+      log('No video URL available for feed $feedIndex');
+      return;
+    }
+
+    // If same video is already playing, just toggle play/pause
+    if (_currentPlayingIndex == feedIndex && _currentVideoController != null) {
+      if (_isVideoPlaying) {
+        await pauseVideo();
+      } else {
+        await resumeVideo();
+      }
+      return;
+    }
+
+    // Stop current video if playing
+    await stopCurrentVideo();
+
+    try {
+      _isVideoLoading = true;
+      _currentPlayingIndex = feedIndex;
+      notifyListeners();
+
+      _currentVideoController = VideoPlayerController.network(videoUrl);
+      await _currentVideoController!.initialize();
+
+      // Set up video listeners
+      _currentVideoController!.addListener(_videoListener);
+
+      // Update duration and start playing
+      _videoDuration = _currentVideoController!.value.duration;
+      _isVideoPlaying = true;
+      _isVideoLoading = false;
+
+      // Auto play the video
+      await _currentVideoController!.play();
+
+      log('Video started playing for feed $feedIndex');
+      notifyListeners();
+    } catch (e) {
+      log('Error playing video: $e');
+      _isVideoLoading = false;
+      await stopCurrentVideo();
+    }
+  }
+
+  void _videoListener() {
+    if (_currentVideoController != null && _currentVideoController!.value.isInitialized) {
+      _videoPosition = _currentVideoController!.value.position;
+
+      // Check if video ended
+      if (!_currentVideoController!.value.isPlaying &&
+          _currentVideoController!.value.position == _currentVideoController!.value.duration &&
+          _currentVideoController!.value.duration > Duration.zero) {
+        _isVideoPlaying = false;
+        log('Video playback completed');
+      } else {
+        _isVideoPlaying = _currentVideoController!.value.isPlaying;
+      }
+
+      notifyListeners();
+    }
+  }
+
+  Future<void> pauseVideo() async {
+    if (_currentVideoController != null && _isVideoPlaying) {
+      await _currentVideoController!.pause();
+      _isVideoPlaying = false;
+      log('Video paused');
+      notifyListeners();
+    }
+  }
+
+  Future<void> resumeVideo() async {
+    if (_currentVideoController != null && !_isVideoPlaying) {
+      await _currentVideoController!.play();
+      _isVideoPlaying = true;
+      log('Video resumed');
+      notifyListeners();
+    }
+  }
+
+  Future<void> stopCurrentVideo() async {
+    if (_currentVideoController != null) {
+      _currentVideoController!.removeListener(_videoListener);
+      await _currentVideoController!.pause();
+      await _currentVideoController!.dispose();
+      _currentVideoController = null;
+      _currentPlayingIndex = null;
+      _isVideoPlaying = false;
+      _isVideoLoading = false;
+      _videoDuration = Duration.zero;
+      _videoPosition = Duration.zero;
+      log('Video stopped and disposed');
+      notifyListeners();
+    }
+  }
+
+  void seekTo(Duration position) {
+    if (_currentVideoController != null && _currentVideoController!.value.isInitialized) {
+      _currentVideoController!.seekTo(position);
+      _videoPosition = position;
+      notifyListeners();
+    }
+  }
+
+  // Toggle play/pause for current video
+  Future<void> togglePlayPause() async {
+    if (_isVideoPlaying) {
+      await pauseVideo();
+    } else {
+      await resumeVideo();
+    }
+  }
+
+  @override
+  void dispose() {
+    stopCurrentVideo();
+    super.dispose();
   }
 }

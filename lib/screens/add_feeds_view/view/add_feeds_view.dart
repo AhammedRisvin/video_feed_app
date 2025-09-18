@@ -73,14 +73,54 @@ class AddFeedsView extends StatelessWidget {
           text(text: 'Add Feeds', size: 16, fontWeight: FontWeight.w600, color: AppColor.white),
           const Spacer(),
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              // Show validation error if form is invalid
               if (!provider.validateForm()) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill all required fields'), backgroundColor: Colors.red),
+                );
                 return;
               }
-              // TODO: Upload logic here
+
+              // Call the API
+              try {
+                final success = await provider.addFeedFn();
+
+                if (success) {
+                  provider.clearFields();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Feed added successfully!'),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    await Future.delayed(const Duration(milliseconds: 500));
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  }
+                } else {
+                  // Show error message
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to add feed. Please try again.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                // Handle any unexpected errors
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('An error occurred: ${e.toString()}'), backgroundColor: Colors.red),
+                  );
+                }
+              }
             },
             child: Container(
               decoration: BoxDecoration(
@@ -89,7 +129,7 @@ class AddFeedsView extends StatelessWidget {
                 color: const Color(0xffC70000).withOpacity(0.4),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-              child: provider.isLoading
+              child: provider.isSharePostLoading
                   ? const SizedBox(
                       height: 14,
                       width: 14,
@@ -105,7 +145,7 @@ class AddFeedsView extends StatelessWidget {
 
   Widget _buildVideoPicker(AddFeedsProvider provider) {
     return GestureDetector(
-      onTap: provider.pickVideo,
+      onTap: provider.isSharePostLoading ? null : provider.pickVideo,
       child: CustomDottedContainer(
         child: SizedBox(
           width: double.infinity,
@@ -132,7 +172,7 @@ class AddFeedsView extends StatelessWidget {
 
   Widget _buildThumbnailPicker(AddFeedsProvider provider) {
     return GestureDetector(
-      onTap: provider.pickThumbnail,
+      onTap: provider.isSharePostLoading ? null : provider.pickThumbnail,
       child: CustomDottedContainer(
         child: SizedBox(
           width: double.infinity,
@@ -157,6 +197,7 @@ class AddFeedsView extends StatelessWidget {
 
   Widget _buildDescriptionField(AddFeedsProvider provider) {
     return TextFormField(
+      enabled: !provider.isSharePostLoading,
       style: const TextStyle(color: Colors.white, fontSize: 14),
       maxLines: null,
       onChanged: (val) => provider.description = val,
